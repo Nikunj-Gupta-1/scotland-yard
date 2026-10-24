@@ -1,0 +1,25 @@
+{
+  "name": "@scotland-yard/server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --experimental-strip-types src/index.ts",
+    "build": "tsc",
+    "start": "node --experimental-strip-types src/index.ts",
+    "test": "node --test --experimental-strip-types src/__tests__/*.test.ts"
+  },
+  "dependencies": {
+    "@scotland-yard/common": "*",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.14.0",
+    "socket.io-client": "^4.8.1",
+    "typescript": "^5.8.2"
+  }
+}
