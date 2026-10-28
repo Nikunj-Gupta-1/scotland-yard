@@ -30,6 +30,7 @@ const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@scotland-yard/common'],
   allowedDevOrigins: getLocalDevOrigins(),
+  basePath: process.env.BASE_PATH || '',
 };
 
 export default nextConfig;
