@@ -82,6 +82,7 @@ flowchart TD
 - **Path**: `/package.json`
 - **Purpose**: Defines root npm workspaces (`packages/*`), global scripts, and monorepo devDependencies.
 - **Exports/Scripts**:
+  - `npm start` / `./start.sh`: Launches both the server and client concurrently in a single foreground terminal with graceful `SIGINT` trap cleanup.
   - `npm test`: Runs test suites across all workspaces (`packages/common` and `packages/server`).
   - `npm run test:common`: Runs `packages/common` unit tests via Node.js native test runner.
   - `npm run test:server`: Runs `packages/server` unit and Socket.io integration tests via Node.js native test runner.
@@ -103,6 +104,10 @@ flowchart TD
 #### `.env.example`
 - **Path**: `/.env.example`
 - **Purpose**: Documents optional environment variables for client and server (`NEXT_PUBLIC_SERVER_URL`, `ALLOWED_DEV_ORIGINS`, `PORT`, `HOST`, `CORS_ORIGIN`, `RECONNECT_GRACE_MS`). All variables have zero-config defaults.
+
+#### `start.sh`
+- **Path**: `/start.sh`
+- **Purpose**: Single-session runner script launching both Socket.io server (:3001) and Next.js client (:3000) concurrently in the foreground. Traps `EXIT`, `INT`, `TERM` to cleanly terminate both child processes on `Ctrl+C`.
 
 ---
 

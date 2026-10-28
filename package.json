@@ -6,6 +6,7 @@
     "packages/*"
   ],
   "scripts": {
+    "start": "./start.sh",
     "test": "npm run test --workspaces --if-present",
     "test:common": "npm run test --workspace=packages/common",
     "test:server": "npm run test --workspace=packages/server",
