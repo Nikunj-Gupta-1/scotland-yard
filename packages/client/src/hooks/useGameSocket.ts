@@ -83,8 +83,16 @@ export interface ChatMessage {
   timestamp: number;
 }
 
-const SERVER_URL =
-  process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3001";
+function getSocketServerUrl(): string {
+  if (process.env.NEXT_PUBLIC_SERVER_URL) {
+    return process.env.NEXT_PUBLIC_SERVER_URL;
+  }
+  if (typeof window !== "undefined" && window.location.hostname) {
+    const protocol = window.location.protocol === "https:" ? "https:" : "http:";
+    return `${protocol}//${window.location.hostname}:3001`;
+  }
+  return "http://localhost:3001";
+}
 
 export function useGameSocket() {
   const socketRef = useRef<Socket | null>(null);
@@ -123,7 +131,8 @@ export function useGameSocket() {
   }, []);
 
   useEffect(() => {
-    const socket = io(SERVER_URL, {
+    const serverUrl = getSocketServerUrl();
+    const socket = io(serverUrl, {
       autoConnect: true,
       transports: ["websocket", "polling"],
       reconnectionAttempts: Infinity,

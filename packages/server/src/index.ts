@@ -20,23 +20,25 @@ import {
 
 type Ack = (res: object) => void;
 
-// Comma-separated allow-list via CORS_ORIGIN; defaults to permissive for LAN play.
-const corsOrigin: string | string[] = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(",").map((o) => o.trim())
-  : "*";
+// Comma-separated allow-list via CORS_ORIGIN; defaults to true (reflects request origin) for LAN play.
+const corsOrigin: boolean | string | string[] =
+  process.env.CORS_ORIGIN && process.env.CORS_ORIGIN !== "*"
+    ? process.env.CORS_ORIGIN.split(",").map((o) => o.trim())
+    : true;
 
 const chatLimiter = new RateLimiter(5, 3000);
 const pinLimiter = new RateLimiter(20, 3000);
 
 const app = express();
-app.use(cors({ origin: corsOrigin }));
+app.use(cors({ origin: corsOrigin, credentials: true }));
 app.use(express.json());
 
 const server = http.createServer(app);
 const io = new SocketIOServer(server, {
   cors: {
     origin: corsOrigin,
-    methods: ["GET", "POST"]
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 
@@ -545,12 +547,13 @@ io.on("connection", (socket: Socket) => {
   });
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = Number(process.env.PORT) || 3001;
+const HOST = process.env.HOST || "0.0.0.0";
 
 // Only start listening if index.ts is run directly (not imported in tests)
 if (process.env.NODE_ENV !== "test") {
-  server.listen(PORT, () => {
-    console.log(`[Scotland Yard Server] Real-time multiplayer listening on port ${PORT}`);
+  server.listen(PORT, HOST, () => {
+    console.log(`[Scotland Yard Server] Real-time multiplayer listening on http://${HOST}:${PORT}`);
   });
 }
 

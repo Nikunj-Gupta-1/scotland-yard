@@ -100,6 +100,10 @@ flowchart TD
 - **Path**: `/tsconfig.base.json`
 - **Purpose**: Base TypeScript compiler settings shared across packages (`target: ES2022`, `moduleResolution: Bundler`, `strict: true`).
 
+#### `.env.example`
+- **Path**: `/.env.example`
+- **Purpose**: Documents optional environment variables for client and server (`NEXT_PUBLIC_SERVER_URL`, `ALLOWED_DEV_ORIGINS`, `PORT`, `HOST`, `CORS_ORIGIN`, `RECONNECT_GRACE_MS`). All variables have zero-config defaults.
+
 ---
 
 ### 2.2 `packages/common` (Pure Game Logic, Graph, Maps, and AI)
@@ -175,12 +179,13 @@ flowchart TD
 - **Path**: `/packages/server/src/index.ts`
 - **Purpose**: Express HTTP server and Socket.io real-time event dispatcher.
 - **Responsibilities**:
-  - Listens on port `3001`.
+  - Listens on `HOST` (`0.0.0.0` by default, configurable via `HOST`) and `PORT` (`3001` by default), accepting cross-device connections across local networks.
+  - Permissive dynamic origin reflection CORS (`origin: true`) and `credentials: true` for Socket.IO and Express to allow seamless multi-device play across local network IP addresses without hardcoded IP constraints, while supporting explicit allowlists via `CORS_ORIGIN`.
   - Handles socket lifecycle: `LOBBY_CREATE`, `LOBBY_JOIN`, `SESSION_RESUME`, `LOBBY_LEAVE`, `ROLE_CLAIM`, `CONFIG_UPDATE`, `GAME_START`, `MAKE_MOVE`, `TACTICAL_ACTION`, `SCRATCHPAD_UPDATE`, `CHAT_MESSAGE`, `disconnect`.
   - Dispatches sanitized state updates per socket via `broadcastSanitizedGameState`, using `controller.getViewerRole(socketId)`.
   - **Session Reconnection & Grace Window**: Issues a secret `sessionToken` on `LOBBY_CREATE`/`LOBBY_JOIN`. On disconnect, holds the player's seat for `RECONNECT_GRACE_MS` (default 45s) so `SESSION_RESUME` can rebind their roles and host privileges; only converts to bots via `finalizeLeave`/`releaseSocket` if the grace timer expires or `LOBBY_LEAVE` is called explicitly.
   - **Hardened Room Lookup (`GET /api/room/:code`)**: Rate-limited (30 req/min/IP), validates room code format, and returns only `{ exists, joinable, status }` without leaking player lists or room config.
-  - All payloads are validated via `security/validation.ts`; scratchpad/chat use the socket's own room (not the client-supplied code), are rate-limited, and Mister X cannot write/read the detectives' channels or pins. `GAME_START` only runs from lobby state. CORS origin is configurable via `CORS_ORIGIN` (default `*` for LAN play).
+  - All payloads are validated via `security/validation.ts`; scratchpad/chat use the socket's own room (not the client-supplied code), are rate-limited, and Mister X cannot write/read the detectives' channels or pins. `GAME_START` only runs from lobby state.
 - **Imported By**: Executed directly by Node.js, `integration.test.ts`.
 
 #### `packages/server/src/lobby/RoomManager.ts`
@@ -226,6 +231,18 @@ flowchart TD
 ---
 
 ### 2.4 `packages/client` (Next.js 16 Web Application)
+
+#### `packages/client/next.config.mjs`
+- **Path**: `/packages/client/next.config.mjs`
+- **Purpose**: Next.js client configuration supporting webpack compilation and multi-device LAN debugging.
+- **Features**:
+  - Dynamically detects host IPv4 network interfaces via `os.networkInterfaces()` and registers them in `allowedDevOrigins` (alongside `10.30.87.193` and `process.env.ALLOWED_DEV_ORIGINS`), ensuring remote devices connecting over Wi-Fi are never blocked by Next.js dev server cross-origin restrictions.
+
+#### `packages/client/src/hooks/useGameSocket.ts`
+- **Path**: `/packages/client/src/hooks/useGameSocket.ts`
+- **Purpose**: Client-side Socket.io communication hook managing multiplayer lifecycle, room creation/joining, session resumption, and real-time state synchronization.
+- **Features**:
+  - **Dynamic Socket Server Resolution (`getSocketServerUrl`)**: Checks `NEXT_PUBLIC_SERVER_URL`, falling back dynamically to `http://${window.location.hostname}:3001` in browser environments. This guarantees that devices on the local network (smartphones, tablets, secondary laptops) connect directly to the host machine's server rather than attempting to connect to their own local port 3001.
 
 #### `packages/client/src/app/page.tsx`
 - **Path**: `/packages/client/src/app/page.tsx`
