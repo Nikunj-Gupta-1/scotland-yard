@@ -27,7 +27,7 @@ echo ""
 npm run dev:server &
 
 # 2. Start Next.js production web client (port 3000)
-npm run start --workspace=packages/client &
+BASE_PATH="${BASE_PATH:-}" npm run start --workspace=packages/client &
 
 # Keep script in foreground and wait for child processes
 wait

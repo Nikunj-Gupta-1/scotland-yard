@@ -242,7 +242,7 @@ flowchart TD
 - **Purpose**: Next.js client configuration supporting webpack compilation and multi-device LAN debugging.
 - **Features**:
   - Dynamically detects host IPv4 network interfaces via `os.networkInterfaces()` and registers them in `allowedDevOrigins` (alongside `10.30.87.193` and `process.env.ALLOWED_DEV_ORIGINS`), ensuring remote devices connecting over Wi-Fi are never blocked by Next.js dev server cross-origin restrictions.
-  - Supports configurable `basePath` via `process.env.BASE_PATH` (e.g. `/play`) for reverse-proxy deployments behind subpaths without taking over root `/`.
+  - Supports configurable `basePath` via `process.env.BASE_PATH` (e.g. `/play`) with automatic runtime resolution from `.next/routes-manifest.json` for seamless reverse-proxy deployments behind subpaths without taking over root `/`.
 
 #### `packages/client/src/hooks/useGameSocket.ts`
 - **Path**: `/packages/client/src/hooks/useGameSocket.ts`
